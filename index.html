@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Travel and Tour Booking System</title>
+<style>
+  :root{
+    --maxw:420px;
+    --bg1:#ffd1dc;
+    --bg2:#aee6ff;
+    --card-bg: rgba(255,255,255,0.85);
+    --muted:#666;
+  }
+
+  html,body{
+    height:100%;
+    margin:0;
+    font-family:system-ui,Arial,sans-serif;
+    background:linear-gradient(to bottom,var(--bg1),var(--bg2));
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .wrap{
+    width:100%;
+    max-width:var(--maxw);
+    height:100vh;
+    margin:0 auto;
+    overflow:hidden;
+    position:relative;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+    border-radius:18px;
+    background:transparent;
+  }
+
+  .app{
+    width:100%;
+    height:300vh;
+    transition: transform 420ms cubic-bezier(.2,.9,.2,1);
+    will-change: transform;
+  }
+
+  .screen {
+    width:100%;
+    height:100vh;
+    box-sizing:border-box;
+    padding-left:20px;
+    padding-right:20px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    overflow:hidden;
+  }
+
+  /* Screen 1 */
+  .screen1 { justify-content:center; position:relative; text-align:center; }
+  .screen1 h1{margin:0;font-size:28px;color:#222;}
+  .screen1 p{margin:10px 0 0;color:var(--muted);}
+
+  .drag-button{
+    width:64px;height:64px;border-radius:50%;
+    background:rgba(255,255,255,0.95);
+    position:absolute;bottom:36px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 20px rgba(0,0,0,0.12); cursor:grab;
+  }
+  .drag-button:active{cursor:grabbing;}
+  .drag-button::before{
+    content:"";
+    display:block;
+    width:0;height:0;
+    border-left:12px solid transparent;
+    border-right:12px solid transparent;
+    border-bottom:18px solid #333;
+  }
+
+  @keyframes bounceHint {
+    0%{transform:translateY(0)}
+    50%{transform:translateY(-8px)}
+    100%{transform:translateY(0)}
+  }
+  .drag-button.hint{animation:bounceHint 1.3s infinite 0.6s;}
+
+  /* Screen 2 */
+  .screen2 {
+    background:linear-gradient(to bottom,var(--bg1),var(--bg2));
+    padding-top:40px;
+    overflow-y:auto;
+    flex:1;
+  }
+  .welcome{
+    margin-top:8px;
+    text-align:center;
+    font-weight:700;
+    font-size:20px;
+    color:#222;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.6);
+  }
+
+  .form-container{
+    margin-top:18px auto;
+    width:100%;
+    max-width:360px;
+    background:var(--card-bg);
+    padding:18px;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  }
+  .form-container input{
+    width:90%;padding:10px;margin:8px 0;border-radius:8px;border:1px solid #ccc;font-size:15px;
+  }
+  .form-container button{
+    width:100%;padding:12px;border-radius:8px;border:0;background:#111;color:#fff;font-weight:600;margin-top:8px;
+  }
+  .toggle{font-size:14px;color:var(--muted);margin-top:10px;}
+  .toggle a{color:#111;text-decoration:underline;cursor:pointer;}
+
+  .social-row{display:flex;gap:14px;justify-content:center;margin-top:16px;}
+  .social{
+    width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #333;background:white;font-weight:700;
+  }
+  .social.square{border-radius:8px;width:44px;}
+
+  .back-button{
+    margin-top:16px;
+    padding:10px 20px;
+    border-radius:8px;
+    border:0;
+    background:#555;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+  }
+
+  /* Screen 3 */
+  .screen3{ background:linear-gradient(to bottom,var(--bg1),var(--bg2)); padding-top:18px; overflow:auto; }
+  .explore-head{width:100%;max-width:420px;padding:8px 0;text-align:left; position:relative;}
+
+  .title-row{display:flex;flex-direction:column;align-items:flex-start;padding-left:14px;}
+  .title-row h2{margin:4px 0 2px;font-size:28px;color:#111;}
+  .title-row p{margin:0;color:var(--muted);font-size:13px;}
+
+  .profile-icon{
+    position:absolute;
+    right:16px;
+    top:10px;
+    font-size:24px;
+    background:white;
+    border-radius:50%;
+    width:34px;
+    height:34px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 2px 4px rgba(0,0,0,0.1);
+    cursor:pointer;
+  }
+
+  .search-box{width:92%;max-width:420px;margin:14px auto;display:flex;gap:8px;align-items:center;}
+  .search-box input{flex:1;padding:10px;border-radius:8px;border:1px solid #ccc;font-size:15px;}
+  .search-box button{padding:10px 12px;border-radius:8px;border:0;background:#111;color:#fff;cursor:pointer;}
+
+  .categories{display:flex;justify-content:space-between;width:100%;max-width:420px;margin:14px auto;padding:0 6px;box-sizing:border-box;}
+  .cat{
+    width:22%;
+    aspect-ratio:1/1;
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    color:white;font-weight:700;font-size:18px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+  }
+
+  .cat.beach{background:linear-gradient(135deg,#FF7AA2,#FFB6D5);}
+  .cat.mountain{background:linear-gradient(135deg,#7BDFF6,#8EC5FF);}
+  .cat.resorts{background:linear-gradient(135deg,#FFD27A,#FFB86B);}
+  .cat.city{background:linear-gradient(135deg,#C7A7FF,#9CA7FF);}
+
+  .section-title{width:100%;max-width:420px;margin:14px auto 6px;padding-left:12px;font-weight:700;color:#222;}
+  .popular-row{width:100%;max-width:420px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 8px 40px 8px;}
+  .card{
+    min-height:120px;border-radius:12px;background:var(--card-bg);box-shadow:0 6px 18px rgba(0,0,0,0.07);position:relative;padding:8px;
+  }
+  .card .heart{position:absolute;right:8px;top:8px;font-size:16px;color:var(--muted);}
+
+  .bottom-nav{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:12px;width:calc(100% - 40px);max-width:400px;
+    background:rgba(255,255,255,0.95);border-radius:12px;padding:8px 12px;
+    display:flex;justify-content:space-around;box-shadow:0 10px 30px rgba(0,0,0,0.12);
+  }
+  .nav-item{display:flex;flex-direction:column;align-items:center;font-size:14px;color:#333;}
+  .nav-item span{font-size:18px;margin-bottom:4px;}
+
+  @media (max-width:420px){
+    .wrap{border-radius:12px;}
+    .title-row h2{font-size:26px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" role="application">
+  <div class="app" id="app">
+
+    <section class="screen screen1" id="screen1">
+      <h1>Travel and Tour</h1>
+      <p>Presented by BGG</p>
+      <div class="drag-button hint" id="drag-button" aria-label="Drag up to open"></div>
+    </section>
+
+    <section class="screen screen2" id="screen2">
+      <div class="welcome">Welcome!</div>
+
+      <div class="form-container" id="loginForm">
+        <input id="loginEmail" type="email" placeholder="Email" />
+        <input id="loginPass" type="password" placeholder="Password" />
+        <button id="buttonLogin">Log In</button>
+        <div class="toggle">Don't have an account? <a id="showSignup">Sign up now!</a></div>
+        <div id="forgotPw" style="display:none; margin-top:8px;">
+          <a style="color:#111; text-decoration:underline; cursor:pointer;">Forgot Password?</a>
+        </div>
+
+        <div class="social-row" aria-hidden="true">
+          <div class="social" title="Google">G</div>
+          <div class="social square" title="Facebook">f</div>
+          <div class="social" title="Apple">@</div>
+        </div>
+      </div>
+
+      <div class="form-container" id="signupForm" style="display:none;margin-top:16px;">
+        <input id="suName" type="text" placeholder="Full Name" />
+        <input id="suEmail" type="email" placeholder="Email" />
+        <input id="suPass" type="password" placeholder="Password" />
+        <input id="suPass2" type="password" placeholder="Confirm Password" />
+        <button id="buttonSignup">Sign Up</button>
+        <div class="toggle">Already have an account? <a id="showLogin">Log In</a></div>
+        <div class="social-row" aria-hidden="true" style="margin-bottom:24px;">
+          <div class="social" title="Google">G</div>
+          <div class="social square" title="Facebook">f</div>
+          <div class="social" title="Apple">@</div>
+        </div>
+      </div>
+
+      <button class="back-button" id="back-button">⬅ Back</button>
+    </section>
+
+    <section class="screen screen3" id="screen3">
+      <div class="explore-head">
+        <div class="profile-icon">👤</div>
+        <div class="title-row">
+          <h2>Explore</h2>
+          <p>Come and Enjoy now!</p>
+        </div>
+      </div>
+
+      <div class="search-box">
+        <input id="searchInput" type="search" placeholder="Search bar" />
+        <button id="searchButton">🔍</button>
+      </div>
+
+      <div class="categories" aria-label="Categories">
+        <div class="cat beach" title="Beaches">🏖️</div>
+        <div class="cat mountain" title="Mountains">⛰️</div>
+        <div class="cat resorts" title="Resorts">🏝️</div>
+        <div class="cat city" title="City">🏙️</div>
+      </div>
+
+      <div class="section-title">Popular</div>
+      <div class="popular-row" id="popularList">
+        <div class="card"><div class="heart">♡</div></div>
+        <div class="card"><div class="heart">♡</div></div>
+        <div class="card"><div class="heart">♡</div></div>
+        <div class="card"><div class="heart">♡</div></div>
+      </div>
+
+      <div style="height:90px;"></div>
+    </section>
+
+  </div>
+
+  <nav class="bottom-nav" id="bottomNav" style="display:none;">
+    <div class="nav-item"><span>🏠</span><div>Home</div></div>
+    <div class="nav-item"><span>📍</span><div>Reservations</div></div>
+    <div class="nav-item"><span>🔔</span><div>Notifications</div></div>
+    <div class="nav-item"><span>⚙️</span><div>Settings</div></div>
+    <button class="nav-item" id="logout" title="Logout">
+      <span>🚪</span>
+      <div>Logout</div>
+    </button>
+  </nav>
+</div>
+
+<script>
+(function(){
+  const app = document.getElementById('app');
+  const dragbutton = document.getElementById('drag-button');
+  const bottomNav = document.getElementById('bottomNav');
+  const backbutton = document.getElementById('back-button');
+
+  let startY = null, isDragging = false;
+
+  function saveData(key, data){
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+  function loadData(key){
+    const d = localStorage.getItem(key);
+    return d ? JSON.parse(d) : null;
+  }
+
+  let users = loadData("users") || [];
+  let currentUser = loadData("currentUser") || null;
+
+  function goToScreen(index){
+    const y = -index * window.innerHeight;
+    app.style.transform = `translateY(${y}px)`;
+    bottomNav.style.display = (index === 2) ? 'flex' : 'none';
+  }
+
+  function removeHint(){ dragbutton.classList.remove('hint'); }
+
+  if(currentUser){ goToScreen(2); }
+
+  dragbutton.addEventListener('click', () => { removeHint(); goToScreen(1); });
+
+  dragbutton.addEventListener('touchstart', (ev) => {
+    removeHint();
+    isDragging = true;
+    startY = ev.touches[0].clientY;
+  }, {passive:true});
+  dragbutton.addEventListener('touchmove', (ev) => {
+    if(!isDragging || startY==null) return;
+    const cur = ev.touches[0].clientY;
+    if(startY - cur > 60){ isDragging = false; goToScreen(1); }
+  }, {passive:true});
+  dragbutton.addEventListener('touchend', () => { isDragging = false; startY = null; });
+  dragbutton.addEventListener('mousedown', (ev) => {
+    removeHint();
+    isDragging = true;
+    startY = ev.clientY;
+    document.body.style.userSelect = 'none';
+  });
+  window.addEventListener('mousemove', (ev) => {
+    if(!isDragging || startY==null) return;
+    const cur = ev.clientY;
+    if(startY - cur > 60){ isDragging = false; goToScreen(1); }
+  });
+  window.addEventListener('mouseup', () => { isDragging = false; startY = null; document.body.style.userSelect = ''; });
+
+  document.getElementById('showSignup').addEventListener('click', () => {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = 'block';
+  });
+  document.getElementById('showLogin').addEventListener('click', () => {
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+  });
+
+  document.getElementById('buttonSignup').addEventListener('click', (ev)=>{
+    ev.preventDefault();
+    const name = document.getElementById('suName').value.trim();
+    const email = document.getElementById('suEmail').value.trim();
+    const pass = document.getElementById('suPass').value.trim();
+    const pass2 = document.getElementById('suPass2').value.trim();
+
+    if(!name || !email || !pass) return alert("Fill all fields!");
+    if(pass !== pass2) return alert("Passwords do not match!");
+    if(users.find(u=>u.email === email)) return alert("Account already exists!");
+
+    users.push({ name,email,pass });
+    saveData("users", users);
+
+    alert("Account created! Please login.");
+    document.getElementById('showLogin').click();
+  });
+
+
+  let failedAttempts = 0;
+  const forgotPw = document.getElementById("forgotPw");
+
+  document.getElementById('buttonLogin').addEventListener('click', (ev)=>{
+    ev.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+    const found = users.find(u=>u.email === email && u.pass === pass);
+    
+    if(!found){
+      failedAttempts++;
+      alert("Wrong email or password!");
+      if(failedAttempts >= 2) forgotPw.style.display = "block";
+      return;
+    }
+
+    failedAttempts = 0;
+    forgotPw.style.display = "none";
+    currentUser = found;
+    saveData("currentUser", currentUser);
+    goToScreen(2);
+  });
+
+  forgotPw.addEventListener("click", () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    if(!email) return alert("Enter your email first!");
+    const existing = users.find(u => u.email === email);
+    if(existing){
+      alert("Your password is: " + existing.pass);
+    } else {
+      alert("Email not found. Please sign up.");
+    }
+  });
+
+  backbutton.addEventListener('click', () => goToScreen(0));
+
+  document.getElementById('searchButton').addEventListener('click', () => {
+    const q = document.getElementById('searchInput').value.trim();
+    if(q) alert('Search for: ' + q);
+  });
+
+
+  document.getElementById("logout").addEventListener("click", () => {
+    localStorage.removeItem("currentUser");
+    currentUser = null;
+    alert("You have been logged out!");
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    goToScreen(1);
+  });
+
+})();
+</script>
+
+</body>
+</html>
